@@ -4,11 +4,12 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start":"node main.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "type": "commonjs",
   "dependencies": {
+    "mime": "^2.6.0",
     "mysql2": "^3.24.6"
   }
 }

@@ -99,77 +99,80 @@ function crear(respuesta) {
 }
 
 function alta(pedido, respuesta) {
-let info = ''
-pedido.on('data', datosparciales => {
-info += datosparciales;
-})
-pedido.on('end', () => {
-const formulario = new URLSearchParams(info)
-const registro = {
-descripcion: formulario.get('descripcion'),
-precio: formulario.get('precio')
+    let info = ''
+    pedido.on('data', datosparciales => {
+        info += datosparciales;
+    })
+    pedido.on('end', () => {
+        const formulario = new URLSearchParams(info)
+        const registro = {
+            descripcion: formulario.get('descripcion'),
+            precio: formulario.get('precio')
+        }
+        conexion.query('insert into articulos set ?', registro, (error, resultado) => {
+        if (error) {
+            console.log(error)
+            return
+        }
+    })
+    respuesta.writeHead(200, { 'Content-Type': 'text/html' })
+    respuesta.write(`<!doctype html><html><head></head><body>
+        Se cargo el articulo. <br><a
+        href="index.html">Retornar</a></body></html>`)
+    respuesta.end()
+    })
 }
-conexion.query('insert into articulos set ?', registro, (error, resultado) => {
-if (error) {
-console.log(error)
-return
-}
-})
-respuesta.writeHead(200, { 'Content-Type': 'text/html' })
-respuesta.write(`<!doctype html><html><head></head><body>
-Se cargo el articulo. <br><a
-href="index.html">Retornar</a></body></html>`)
-respuesta.end()
-})
-}
+
 function listado(respuesta) {
-conexion.query('select codigo,descripcion,precio from articulos', (error, filas) => {
-if (error) {
-console.log('error en el listado')
-return
+    conexion.query('select codigo,descripcion,precio from articulos', (error, filas) => {
+        if (error) {
+            console.log('error en el listado')
+            return
+        }
+        respuesta.writeHead(200, { 'Content-Type': 'text/html' })
+        let datos = ''
+        for (let f = 0; f < filas.length; f++) {
+            datos += 'Codigo:' + filas[f].codigo + '<br>'
+            datos += 'Descripcion:' + filas[f].descripcion + '<br>'
+            datos += 'Precio:' + filas[f].precio + '<hr>'
+        }
+        respuesta.write('<!doctype html><html><head></head><body>')
+        respuesta.write(datos)
+        respuesta.write('<a href="index.html">Retornar</a>')
+        respuesta.write('</body></html>')
+        respuesta.end()
+    })
 }
-respuesta.writeHead(200, { 'Content-Type': 'text/html' })
-let datos = ''
-for (let f = 0; f < filas.length; f++) {
-datos += 'Codigo:' + filas[f].codigo + '<br>'
-datos += 'Descripcion:' + filas[f].descripcion + '<br>'
-datos += 'Precio:' + filas[f].precio + '<hr>'
-}
-respuesta.write('<!doctype html><html><head></head><body>')
-respuesta.write(datos)
-respuesta.write('<a href="index.html">Retornar</a>')
-respuesta.write('</body></html>')
-respuesta.end()
-})
-}
+
 function consulta(pedido, respuesta) {
-let info = ''
-pedido.on('data', datosparciales => {
-info += datosparciales
-})
-pedido.on('end', () => {
-const formulario = new URLSearchParams(info)
-const dato = [formulario.get('codigo')]
-conexion.query('select descripcion,precio from articulos where codigo=?', dato,
-(error, filas) => {
-if (error) {
-console.log('error en la consulta')
-return
+    let info = ''
+    pedido.on('data', datosparciales => {
+        info += datosparciales
+    })
+    pedido.on('end', () => {
+        const formulario = new URLSearchParams(info)
+        const dato = [formulario.get('codigo')]
+        conexion.query('select descripcion,precio from articulos where codigo=?', dato,(error, filas) => {
+            if (error) {
+                console.log('error en la consulta')
+                return
+            }
+            respuesta.writeHead(200, { 'Content-Type': 'text/html' })
+            let datos = ''
+            if (filas.length > 0) {
+                datos += 'Descripcion:' + filas[0].descripcion + '<br>'
+                datos += 'Precio:' + filas[0].precio + '<hr>'
+            } else {
+                datos = 'No existe un artículo con dicho codigo.'
+            }
+            respuesta.write('<!doctype html><html><head></head><body>')
+            respuesta.write(datos)
+            respuesta.write('<a href="index.html">Retornar</a>')
+            respuesta.write('</body></html>')
+            respuesta.end()
+        })
+    })
 }
-respuesta.writeHead(200, { 'Content-Type': 'text/html' })
-let datos = ''
-if (filas.length > 0) {
-datos += 'Descripcion:' + filas[0].descripcion + '<br>'
-datos += 'Precio:' + filas[0].precio + '<hr>'
-} else {
-datos = 'No existe un artículo con dicho codigo.'
-}
-respuesta.write('<!doctype html><html><head></head><body>')
-respuesta.write(datos)
-respuesta.write('<a href="index.html">Retornar</a>')
-respuesta.write('</body></html>')
-respuesta.end()
-})
-})
-}
+
+
 console.log('Servidor web iniciado')
